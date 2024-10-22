@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mt-5">Weather Monitoring Dashboard</h1>
+        <div id="weather-summary" class="mt-4"></div>
+        <canvas id="temperatureChart" class="mt-4"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Fetch weather data for Delhi and update UI
+        fetch('/weather/Delhi')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('weather-summary').innerHTML = `
+                    <h3>City: ${data.city}</h3>
+                    <p>Temperature: ${data.main.temp} °C</p>
+                    <p>Feels Like: ${data.main.feels_like} °C</p>
+                    <p>Condition: ${data.weather[0].main}</p>
+                    <p>Last Updated: ${new Date(data.dt * 1000).toLocaleString()}</p>
+                `;
+            });
+
+        // Example of temperature chart
+        const ctx = document.getElementById('temperatureChart').getContext('2d');
+        const temperatureChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['9 AM', '12 PM', '3 PM', '6 PM', '9 PM'],
+                datasets: [{
+                    label: 'Temperature',
+                    data: [25, 28, 30, 27, 22],  // Placeholder data
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            }
+        });
+    </script>
+</body>
+</html>
