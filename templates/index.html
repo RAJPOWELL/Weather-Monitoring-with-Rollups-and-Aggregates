@@ -46,7 +46,7 @@
             animation: fadeIn 1s; /* Fade in animation for timer */
         }
 
-        #refresh-button {
+        #refresh-button, #daily-summary-button {
             display: block;
             margin: 0 auto 20px auto;
             padding: 10px 20px;
@@ -61,7 +61,7 @@
             color: #ffffff; /* White text */
         }
 
-        #refresh-button:hover {
+        #refresh-button:hover, #daily-summary-button:hover {
             background-color: #42a5f5; /* Lighter blue on hover */
             transform: scale(1.05); /* Slight scale on hover */
         }
@@ -99,6 +99,29 @@
             color: #ffffff; /* Icon color */
         }
 
+        .daily-summary {
+            margin-top: 40px; /* Space between sections */
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.1); /* Light background for daily summary */
+        }
+
+        .daily-summary h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .daily-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .daily-summary-table th, .daily-summary-table td {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px;
+            text-align: center;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -122,6 +145,7 @@
         <h1>Weather Monitoring Dashboard</h1>
         <div id="timer">Next refresh in: <span id="time-remaining">5:00</span></div>
         <button id="refresh-button">Refresh Data</button>
+        <button id="daily-summary-button">Fetch Daily Summary</button> <!-- New button -->
         <div id="weather-summary" class="weather-summary">
             {% for city, data in weather_data.items() %}
                 <div class="city-summary">
@@ -138,6 +162,25 @@
                 </div>
             {% endfor %}
         </div>
+
+        <!-- Daily Weather Summary Section -->
+        <div class="daily-summary">
+            <h2>Daily Weather Summary</h2>
+            <table class="daily-summary-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Average Temp (°C)</th>
+                        <th>Max Temp (°C)</th>
+                        <th>Min Temp (°C)</th>
+                        <th>Dominant Condition</th>
+                    </tr>
+                </thead>
+                <tbody id="daily-summary-body">
+                    <!-- Daily summaries will be inserted here -->
+                </tbody>
+            </table>
+        </div>
     </div>
     
     <script>
@@ -153,6 +196,7 @@
                 if (timeRemaining <= 0) {
                     clearInterval(interval);
                     fetchWeatherData(); // Automatically fetch data when time is up
+                    fetchDailySummary(); // Fetch daily summary
                     timeRemaining = 300; // Reset timer
                     startTimer(); // Restart timer
                 }
@@ -188,17 +232,55 @@
                     <p>Wind Speed: ${cityData.wind_speed} m/s</p>
                     <p>Pressure: ${cityData.pressure} hPa</p>
                     <p>Visibility: ${cityData.visibility.toFixed(2)} km</p>
-                    <p>Last Updated: ${new Date(cityData.dt * 1000).toLocaleString()}</p>
+                    <p>Last Updated: ${cityData.dt}</p>
                 `;
                 weatherSummaryDiv.appendChild(cityDiv);
             }
         }
 
-        // Attach the refresh button click event
-        document.getElementById('refresh-button').addEventListener('click', async () => {
-            await fetchWeatherData();
-            timeRemaining = 300; // Reset the timer when refresh button is clicked
-        });
+        // Fetch daily weather summary on button click
+        document.getElementById('daily-summary-button').addEventListener('click', fetchDailySummary);
+
+        // Function to fetch daily weather summary
+        async function fetchDailySummary() {
+            try {
+                const response = await fetch('/api/daily_summary');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const dailyData = await response.json();
+                console.log('Daily Summary Data:', dailyData); // Log the data received
+                const dailySummaryBody = document.getElementById('daily-summary-body');
+                dailySummaryBody.innerHTML = ''; // Clear previous summary data
+
+                // Check if dailyData is an array and log its length
+                if (!Array.isArray(dailyData) || dailyData.length === 0) {
+                    console.log('No data available or not an array');
+                    dailySummaryBody.innerHTML = '<tr><td colspan="5">No data available</td></tr>';
+                    return;
+                }
+
+                // Populate the table with the fetched data
+                dailyData.forEach(summary => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${summary.date}</td>
+                        <td>${summary.avg_temp.toFixed(2)}</td>
+                        <td>${summary.max_temp.toFixed(2)}</td>
+                        <td>${summary.min_temp.toFixed(2)}</td>
+                        <td>${summary.dominant_condition}</td>
+                    `;
+                    dailySummaryBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error fetching daily summary:', error);
+                const dailySummaryBody = document.getElementById('daily-summary-body');
+                dailySummaryBody.innerHTML = '<tr><td colspan="5">Error fetching data</td></tr>';
+            }
+        }
+
+        // Auto-fetch weather data when the page loads
+        document.addEventListener('DOMContentLoaded', fetchWeatherData);
     </script>
 </body>
 </html>

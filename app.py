@@ -2,7 +2,8 @@ from flask import Flask, jsonify, render_template
 import requests
 import time
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
+import sqlite3
 
 app = Flask(__name__)
 
@@ -25,9 +26,27 @@ WEATHER_ICONS = {
     'Fog': 'fa-smog',
 }
 
+# Database initialization
+def init_db():
+    with sqlite3.connect('weather.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS daily_weather (
+                date TEXT PRIMARY KEY,
+                avg_temp REAL,
+                max_temp REAL,
+                min_temp REAL,
+                dominant_condition TEXT
+            )
+        ''')
+        conn.commit()
+
 def fetch_weather_data():
     global weather_data
     with app.app_context():  # Create application context for this thread
+        today = datetime.now().date()
+        daily_records = []
+
         for city in CITIES:
             response = requests.get(f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}")
             data = response.json()
@@ -41,6 +60,15 @@ def fetch_weather_data():
                 pressure = data['main']['pressure']  # Get pressure
                 visibility = data['visibility'] / 1000  # Convert visibility from meters to kilometers
                 dt = data['dt']
+                
+                # Store today's weather data for aggregation
+                daily_records.append({
+                    'temp': temp,
+                    'main': main,
+                    'city': city,
+                    'dt': dt
+                })
+                
                 weather_data[city] = {
                     'main': main,
                     'main_icon': icon_class,  # Use FontAwesome class for the icon
@@ -54,6 +82,30 @@ def fetch_weather_data():
                 }
             else:
                 print(f"Error fetching data for {city}: {data.get('message', 'Unknown error')}")
+        
+        # Calculate daily aggregates and store in database
+        if daily_records:
+            calculate_daily_aggregates(today, daily_records)
+
+def calculate_daily_aggregates(today, records):
+    temps = [record['temp'] for record in records]
+    conditions = [record['main'] for record in records]
+
+    avg_temp = sum(temps) / len(temps) if temps else 0
+    max_temp = max(temps) if temps else 0
+    min_temp = min(temps) if temps else 0
+
+    # Determine the dominant condition
+    dominant_condition = max(set(conditions), key=conditions.count)
+
+    # Store in the database
+    with sqlite3.connect('weather.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT OR REPLACE INTO daily_weather (date, avg_temp, max_temp, min_temp, dominant_condition)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (today.isoformat(), avg_temp, max_temp, min_temp, dominant_condition))
+        conn.commit()
 
 @app.route('/api/fetch_weather')
 def fetch_weather():
@@ -68,11 +120,34 @@ def index():
 def weather_summary():
     return jsonify(weather_data)
 
+@app.route('/api/daily_summary')
+def daily_summary():
+    with sqlite3.connect('weather.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM daily_weather')
+        summaries = cursor.fetchall()
+        
+    # Format summaries for JSON response
+    summary_list = []
+    for date, avg_temp, max_temp, min_temp, dominant_condition in summaries:
+        summary_list.append({
+            'date': date,
+            'avg_temp': avg_temp,
+            'max_temp': max_temp,
+            'min_temp': min_temp,
+            'dominant_condition': dominant_condition
+        })
+    
+    return jsonify(summary_list)
+
 @app.template_filter('to_datetime')
 def to_datetime(timestamp):
     return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
 if __name__ == '__main__':
+    # Initialize database
+    init_db()
+    
     # Start the background thread to fetch weather data every 5 minutes
     threading.Thread(target=fetch_weather_data, daemon=True).start()
     app.run(debug=False)
