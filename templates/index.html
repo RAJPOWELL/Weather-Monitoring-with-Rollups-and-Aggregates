@@ -51,7 +51,7 @@
             margin: 0 auto 20px auto;
             padding: 10px 20px;
             font-size: 18px;
-            background-color: #1e1e1e; /* Dark button color */
+            background-color: #2196F3; /* Blue button color */
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -62,7 +62,7 @@
         }
 
         #refresh-button:hover {
-            background-color: #3a3a3a; /* Slightly lighter on hover */
+            background-color: #42a5f5; /* Lighter blue on hover */
             transform: scale(1.05); /* Slight scale on hover */
         }
 
@@ -80,13 +80,17 @@
             text-align: center;
             flex: 1 1 calc(33.33% - 20px); /* Adjust tile size and spacing */
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Shadow for tiles */
-            background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent tile */
+            background-color: rgba(33, 150, 243, 0.1); /* Light blue semi-transparent tile */
             transition: transform 0.3s, background-color 0.3s; /* Transition for hover effect */
         }
 
         .city-summary:hover {
             transform: scale(1.05); /* Scale effect on hover */
-            background-color: rgba(255, 255, 255, 0.2); /* Change background color on hover */
+            background-color: rgba(33, 150, 243, 0.2); /* Change background color on hover */
+        }
+
+        .city-summary h3 {
+            color: #f09206; /* Light blue color for city names */
         }
 
         .city-summary i {
