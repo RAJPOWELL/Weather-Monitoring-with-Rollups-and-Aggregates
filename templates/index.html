@@ -8,65 +8,108 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+            background-color: #121212; /* Dark background */
+            color: #ffffff; /* White text */
             margin: 0;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh; /* Full height for vertical centering */
             transition: background-color 0.5s ease; /* Smooth background color transition */
         }
+
         .container {
-            max-width: 1200px;
-            margin: auto;
+            max-width: 1200px; /* Maximum width for container */
+            width: 100%; /* Full width */
+            padding: 20px;
+            backdrop-filter: blur(10px); /* Blur effect */
+            border-radius: 15px; /* Rounded corners */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7); /* Deeper shadow for depth */
+            background-color: rgba(30, 30, 30, 0.85); /* Dark semi-transparent background */
         }
+
         h1 {
             text-align: center;
             margin-bottom: 20px;
             animation: fadeIn 1s; /* Fade in animation for title */
+            font-size: 2.5em; /* Larger title */
+            color: #ffffff; /* White color for title */
         }
+
         #timer {
             text-align: center;
             font-size: 24px;
             margin-bottom: 20px;
             animation: fadeIn 1s; /* Fade in animation for timer */
         }
+
         #refresh-button {
             display: block;
             margin: 0 auto 20px auto;
             padding: 10px 20px;
             font-size: 18px;
-            background-color: #ff4081;
+            background-color: #1e1e1e; /* Dark button color */
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.3s; /* Smooth transitions */
             animation: fadeIn 1s; /* Fade in animation for button */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Button shadow */
+            color: #ffffff; /* White text */
         }
+
         #refresh-button:hover {
-            background-color: #ff79b0; /* Change color on hover */
+            background-color: #3a3a3a; /* Slightly lighter on hover */
+            transform: scale(1.05); /* Slight scale on hover */
         }
+
+        .weather-summary {
+            display: flex; /* Use flexbox for alignment */
+            flex-wrap: wrap; /* Wrap tiles on smaller screens */
+            justify-content: space-between; /* Space out the weather tiles */
+        }
+
         .city-summary {
-            border: 1px solid #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 8px;
-            padding: 15px;
+            padding: 20px;
             margin: 10px;
             text-align: center;
-            display: inline-block;
-            width: calc(33.33% - 40px); /* Adjust tile size */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            background-color: #1e1e1e;
-            transition: transform 0.3s; /* Transition for hover effect */
+            flex: 1 1 calc(33.33% - 20px); /* Adjust tile size and spacing */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Shadow for tiles */
+            background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent tile */
+            transition: transform 0.3s, background-color 0.3s; /* Transition for hover effect */
         }
+
         .city-summary:hover {
             transform: scale(1.05); /* Scale effect on hover */
+            background-color: rgba(255, 255, 255, 0.2); /* Change background color on hover */
         }
+
         .city-summary i {
-            font-size: 50px; /* Adjust icon size */
+            font-size: 50px; /* Icon size */
             margin-bottom: 10px;
+            color: #ffffff; /* Icon color */
         }
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .city-summary {
+                flex: 1 1 calc(50% - 20px); /* Responsive tile size for medium screens */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .city-summary {
+                flex: 1 1 calc(100% - 20px); /* Full width on small screens */
+            }
         }
     </style>
 </head>
@@ -75,7 +118,7 @@
         <h1>Weather Monitoring Dashboard</h1>
         <div id="timer">Next refresh in: <span id="time-remaining">5:00</span></div>
         <button id="refresh-button">Refresh Data</button>
-        <div id="weather-summary">
+        <div id="weather-summary" class="weather-summary">
             {% for city, data in weather_data.items() %}
                 <div class="city-summary">
                     <h3>{{ city }}</h3>
