@@ -3,11 +3,16 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
-class WeatherSummary(db.Model):
+class WeatherData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     city = db.Column(db.String(50), nullable=False)
-    avg_temp = db.Column(db.Float, nullable=False)
-    max_temp = db.Column(db.Float, nullable=False)
-    min_temp = db.Column(db.Float, nullable=False)
-    dominant_condition = db.Column(db.String(50), nullable=False)
-    date = db.Column(db.Date, default=datetime.utcnow)
+    main = db.Column(db.String(50))
+    temp = db.Column(db.Float)
+    feels_like = db.Column(db.Float)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __init__(self, city, main, temp, feels_like):
+        self.city = city
+        self.main = main
+        self.temp = temp
+        self.feels_like = feels_like

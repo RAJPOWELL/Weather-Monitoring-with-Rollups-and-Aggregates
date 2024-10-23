@@ -3,45 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
+    <title>Real-Time Weather Monitoring</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.5s ease; /* Smooth background color transition */
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            animation: fadeIn 1s; /* Fade in animation for title */
+        }
+        #timer {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            animation: fadeIn 1s; /* Fade in animation for timer */
+        }
+        #refresh-button {
+            display: block;
+            margin: 0 auto 20px auto;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #ff4081;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            animation: fadeIn 1s; /* Fade in animation for button */
+        }
+        #refresh-button:hover {
+            background-color: #ff79b0; /* Change color on hover */
+        }
+        .city-summary {
+            border: 1px solid #ffffff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px;
+            text-align: center;
+            display: inline-block;
+            width: calc(33.33% - 40px); /* Adjust tile size */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: #1e1e1e;
+            transition: transform 0.3s; /* Transition for hover effect */
+        }
+        .city-summary:hover {
+            transform: scale(1.05); /* Scale effect on hover */
+        }
+        .city-summary i {
+            font-size: 50px; /* Adjust icon size */
+            margin-bottom: 10px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="text-center mt-5">Weather Monitoring Dashboard</h1>
-        <div id="weather-summary" class="mt-4"></div>
-        <canvas id="temperatureChart" class="mt-4"></canvas>
+        <h1>Weather Monitoring Dashboard</h1>
+        <div id="timer">Next refresh in: <span id="time-remaining">5:00</span></div>
+        <button id="refresh-button">Refresh Data</button>
+        <div id="weather-summary">
+            {% for city, data in weather_data.items() %}
+                <div class="city-summary">
+                    <h3>{{ city }}</h3>
+                    <i class="fas {{ data.main_icon }}"></i> <!-- Use FontAwesome icon -->
+                    <p>Main Condition: {{ data.main }}</p>
+                    <p>Current Temperature: {{ data.temp | round(2) }} °C</p>
+                    <p>Feels Like: {{ data.feels_like | round(2) }} °C</p>
+                    <p>Humidity: {{ data.humidity }}%</p>
+                    <p>Wind Speed: {{ data.wind_speed }} m/s</p>
+                    <p>Pressure: {{ data.pressure }} hPa</p>
+                    <p>Visibility: {{ data.visibility | round(2) }} km</p>
+                    <p>Last Updated: {{ data.dt | to_datetime }}</p>
+                </div>
+            {% endfor %}
+        </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <script>
-        // Fetch weather data for Delhi and update UI
-        fetch('/weather/Delhi')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('weather-summary').innerHTML = `
-                    <h3>City: ${data.city}</h3>
-                    <p>Temperature: ${data.main.temp} °C</p>
-                    <p>Feels Like: ${data.main.feels_like} °C</p>
-                    <p>Condition: ${data.weather[0].main}</p>
-                    <p>Last Updated: ${new Date(data.dt * 1000).toLocaleString()}</p>
-                `;
-            });
+        let timeRemaining = 300; // 5 minutes in seconds
+        const timerElement = document.getElementById('time-remaining');
 
-        // Example of temperature chart
-        const ctx = document.getElementById('temperatureChart').getContext('2d');
-        const temperatureChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['9 AM', '12 PM', '3 PM', '6 PM', '9 PM'],
-                datasets: [{
-                    label: 'Temperature',
-                    data: [25, 28, 30, 27, 22],  // Placeholder data
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2,
-                    fill: false
-                }]
+        function startTimer() {
+            const interval = setInterval(() => {
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                timerElement.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(interval);
+                    fetchWeatherData(); // Automatically fetch data when time is up
+                    timeRemaining = 300; // Reset timer
+                    startTimer(); // Restart timer
+                }
+                timeRemaining--;
+            }, 1000);
+        }
+
+        startTimer(); // Start the countdown timer
+
+        // Fetch weather data function
+        async function fetchWeatherData() {
+            const response = await fetch('/api/fetch_weather');
+            const data = await response.json();
+            updateWeatherSummary(data);
+        }
+
+        // Update the weather summary in the UI
+        function updateWeatherSummary(data) {
+            const weatherSummaryDiv = document.getElementById('weather-summary');
+            weatherSummaryDiv.innerHTML = ''; // Clear previous data
+
+            for (const city in data) {
+                const cityData = data[city];
+                const cityDiv = document.createElement('div');
+                cityDiv.className = 'city-summary';
+                cityDiv.innerHTML = `
+                    <h3>${city}</h3>
+                    <i class="fas ${cityData.main_icon}"></i>
+                    <p>Main Condition: ${cityData.main}</p>
+                    <p>Current Temperature: ${cityData.temp.toFixed(2)} °C</p>
+                    <p>Feels Like: ${cityData.feels_like.toFixed(2)} °C</p>
+                    <p>Humidity: ${cityData.humidity}%</p>
+                    <p>Wind Speed: ${cityData.wind_speed} m/s</p>
+                    <p>Pressure: ${cityData.pressure} hPa</p>
+                    <p>Visibility: ${cityData.visibility.toFixed(2)} km</p>
+                    <p>Last Updated: ${new Date(cityData.dt * 1000).toLocaleString()}</p>
+                `;
+                weatherSummaryDiv.appendChild(cityDiv);
             }
+        }
+
+        // Attach the refresh button click event
+        document.getElementById('refresh-button').addEventListener('click', async () => {
+            await fetchWeatherData();
+            timeRemaining = 300; // Reset the timer when refresh button is clicked
         });
     </script>
 </body>
