@@ -3,6 +3,19 @@
 ## Overview
 The Real-Time Weather Monitoring System is a web application that provides users with real-time weather updates, alerts, and historical weather data for multiple cities. Built using the Flask framework and integrated with the OpenWeatherMap API, this application enables users to monitor weather conditions efficiently.
 
+## Features Implemented
+
+| Feature                               | Available |
+|---------------------------------------|-----------|
+| **Real-Time Weather Updates**         | ✅        |
+| **Alerts**                            | ✅        |
+| **Daily Weather Summary**             | ✅        |
+| **Data Visualization**                | ✅        |
+| **User-Friendly Interface**           | ✅        |
+| **Manual Refresh**                    | ✅        |
+| **Responsive Design**                 | ✅        |
+
+
 ## Features
 - **Real-Time Weather Updates**: Automatic weather updates every 5 minutes for a predefined list of cities.
 - **Alerts**: Customizable thresholds for temperature and weather conditions with real-time alerts.
@@ -11,6 +24,7 @@ The Real-Time Weather Monitoring System is a web application that provides users
 - **User-Friendly Interface**: Intuitive dashboard with weather summaries, alerts, and refresh options.
 - **Manual Refresh**: Users can manually refresh weather data at any time.
 - **Responsive Design**: The application is designed to work seamlessly on various devices.
+
 
 ## Installation
 
