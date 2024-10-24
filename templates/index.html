@@ -127,213 +127,236 @@
         #weatherChart {
             margin-top: 40px;
             border-radius: 10px;
-            background-color: rgba(255, 255, 255, 0.1); /* Light background for the chart */
-            padding: 20px;
-        }
-    </style>
+            background-color: rgba(255,255,255,0.1); /* Light background for the chart */
+                padding :20 px ;
+          }
+        
+          .alert{
+              background-color:#ff9800 ; 
+              color:#ffffff ; 
+              padding :15 px ; 
+              margin :10 px ; 
+              border-radius :5 px ; 
+              animation :fadeIn .5 s ; 
+          }
+      </style>
 </head>
 <body>
     <div class="container">
         <h1>Weather Monitoring Dashboard</h1>
-        <div id="timer">Next refresh in: <span id="time-remaining">5:00</span></div>
+        <div id="timer">Next refresh in:<span id="time-remaining">5 :00</span></div>
         <button id="refresh-button">Refresh Data</button>
         <button id="daily-summary-button">Fetch Daily Summary</button>
-        <div id="weather-summary" class="weather-summary">
-            {% for city, data in weather_data.items() %}
-                <div class="city-summary">
-                    <h3>{{ city }}</h3>
-                    <i class="fas {{ data.main_icon }}"></i> <!-- Use FontAwesome icon -->
-                    <p>Main Condition: {{ data.main }}</p>
-                    <p>Current Temperature: {{ data.temp | round(2) }} °C</p>
-                    <p>Feels Like: {{ data.feels_like | round(2) }} °C</p>
-                    <p>Humidity: {{ data.humidity }}%</p>
-                    <p>Wind Speed: {{ data.wind_speed }} m/s</p>
-                    <p>Pressure: {{ data.pressure }} hPa</p>
-                    <p>Visibility: {{ data.visibility | round(2) }} km</p>
-                    <p>Last Updated: {{ data.dt | to_datetime }}</p>
-                </div>
-            {% endfor %}
-        </div>
 
-        <!-- Daily Weather Summary Section -->
-        <div class="daily-summary">
-            <h2>Daily Weather Summary</h2>
-            <table class="daily-summary-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Average Temp (°C)</th>
-                        <th>Max Temp (°C)</th>
-                        <th>Min Temp (°C)</th>
-                        <th>Dominant Condition</th>
-                    </tr>
-                </thead>
-                <tbody id="daily-summary-body">
-                    <!-- Daily summaries will be inserted here -->
-                </tbody>
-            </table>
-        </div>
+        <!-- Alerts Section - New Addition -->
+        <div id="alerts">
+          {% for alert in alerts %}
+          <div class="alert">{{ alert }}</div>
+          {% endfor %}
+      </div>
 
-        <!-- Graph Section -->
-        <div id="graph-section">
-            <h2>Temperature Trends</h2>
-            <canvas id="weatherChart"></canvas>
-        </div>
+      <div id="weather-summary" class="weather-summary">
+          {% for city,data in weather_data.items() %}
+          <div class="city-summary">
+              <h3>{{ city }}</h3>
+              <i class="fas {{ data.main_icon }}"></i> <!-- Use FontAwesome icon -->
+              <p>Main Condition : {{ data.main }}</p>
+              <p>Current Temperature : {{ data.temp | round(2) }} °C</p>
+              <p>Feels Like : {{ data.feels_like | round(2) }} °C</p>
+              <p>Humidity : {{ data.humidity }}%</p>
+              <p>Wind Speed : {{ data.wind_speed }} m/s</p>
+              <p>Pressure : {{ data.pressure }} hPa</p>
+              <p>Visibility : {{ data.visibility | round(2) }} km</p>
+              <p>Last Updated : {{ data.dt | to_datetime }}</p>
+          </div>
+          {% endfor %}
+      </div>
+
+      <!-- Daily Weather Summary Section -->
+      <div class="daily-summary">
+          <h2>Daily Weather Summary</h2>
+          <table class="daily-summary-table">
+              <thead>
+                  <tr>
+                      <th>Date</th>
+                      <th>Average Temp (°C)</th>
+                      <th>Max Temp (°C)</th>
+                      <th>Min Temp (°C)</th>
+                      <th>Dominant Condition</th>
+                  </tr>
+              </thead>
+              <tbody id="daily-summary-body">
+                  <!-- Daily summaries will be inserted here -->
+              </tbody>
+          </table>
+      </div>
+
+      <!-- Graph Section -->
+      <div id="graph-section">
+          <h2>Temperature Trends</h2>
+          <canvas id="weatherChart"></canvas>
+      </div>
     </div>
-    
+
     <script>
-        let timeRemaining = 300; // 5 minutes in seconds
-        const timerElement = document.getElementById('time-remaining');
+      let timeRemaining =300 ; //5 minutes in seconds
+      const timerElement = document.getElementById('time-remaining');
 
-        function startTimer() {
-            const interval = setInterval(() => {
-                const minutes = Math.floor(timeRemaining / 60);
-                const seconds = timeRemaining % 60;
-                timerElement.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-                
-                if (timeRemaining <= 0) {
-                    clearInterval(interval);
-                    fetchWeatherData(); // Fetch new data after timer expires
-                    timeRemaining = 300; // Reset timer
-                    startTimer(); // Restart timer
-                }
-                timeRemaining--;
-            }, 1000);
-        }
+      function startTimer() {
+          const interval = setInterval(() => {
+              const minutes = Math.floor(timeRemaining /60);
+              const seconds = timeRemaining %60 ;
+              timerElement.innerText = `${minutes}:${seconds<10 ? '0' : ''}${seconds}` ;
 
-        // Function to fetch weather data
-        async function fetchWeatherData() {
-            try {
-                const response = await fetch('/api/weather');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const weatherData = await response.json();
-                console.log('Weather Data:', weatherData); // Log the weather data
-                updateWeatherSummary(weatherData); // Update the UI with the weather data
-            } catch (error) {
-                console.error('Error fetching weather data:', error);
-            }
-        }
+              if (timeRemaining <=0) {
+                  clearInterval(interval);
+                  fetchWeatherData(); // Fetch new data after timer expires
+                  timeRemaining =300 ; // Reset timer
+                  startTimer(); // Restart timer
+              }
+              timeRemaining--;
+          },1000);
+      }
 
-        // Update the weather summary in the UI
-        function updateWeatherSummary(weatherData) {
-            const weatherSummaryDiv = document.getElementById('weather-summary');
-            weatherSummaryDiv.innerHTML = ''; // Clear previous data
+      // Function to fetch weather data
+      async function fetchWeatherData() {
+          try {
+              const response = await fetch('/api/weather');
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              const data = await response.json();
+              updateWeatherData(data);
+          } catch (error) {
+              console.error('Error fetching weather data:', error);
+          }
+      }
 
-            for (const city in weatherData) {
-                const data = weatherData[city];
-                const cityDiv = document.createElement('div');
-                cityDiv.className = 'city-summary';
-                cityDiv.innerHTML = `
-                    <h3>${city}</h3>
-                    <i class="fas ${data.main_icon}"></i>
-                    <p>Main Condition: ${data.main}</p>
-                    <p>Current Temperature: ${data.temp.toFixed(2)} °C</p>
-                    <p>Feels Like: ${data.feels_like.toFixed(2)} °C</p>
-                    <p>Humidity: ${data.humidity}%</p>
-                    <p>Wind Speed: ${data.wind_speed} m/s</p>
-                    <p>Pressure: ${data.pressure} hPa</p>
-                    <p>Visibility: ${data.visibility.toFixed(2)} km</p>
-                    <p>Last Updated: ${new Date(data.dt * 1000).toLocaleString()}</p>
-                `;
-                weatherSummaryDiv.appendChild(cityDiv);
-            }
-        }
+      function updateWeatherData(data) {
+          // Update alerts section - New Addition
+          const alertsContainer = document.getElementById('alerts');
+          alertsContainer.innerHTML = ''; // Clear previous alerts
+          if (data.alerts) {
+              data.alerts.forEach(alert => {
+                  const alertDiv = document.createElement('div');
+                  alertDiv.className = 'alert';
+                  alertDiv.innerText = alert;
+                  alertsContainer.appendChild(alertDiv);
+              });
+          }
 
-        // Fetch daily weather summary on button click
-        document.getElementById('daily-summary-button').addEventListener('click', fetchDailySummary);
+          // Update weather summary
+          const weatherSummaryDiv = document.getElementById('weather-summary');
+          weatherSummaryDiv.innerHTML = ''; // Clear previous data
 
-        // Function to fetch daily weather summary
-        async function fetchDailySummary() {
-            try {
-                const response = await fetch('/api/daily_summary');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const dailyData = await response.json();
-                console.log('Daily Summary Data:', dailyData); // Log the data received
+          for (const city in data.weather_data) {
+              const cityData = data.weather_data[city];
+              const cityDiv = document.createElement('div');
+              cityDiv.className = 'city-summary';
+              cityDiv.innerHTML =
+                  `<h3>${city}</h3>` +
+                  `<i class="fas ${cityData.main_icon}"></i>` +
+                  `<p>Main Condition : ${cityData.main}</p>` +
+                  `<p>Current Temperature : ${cityData.temp.toFixed(2)} °C</p>` +
+                  `<p>Feels Like : ${cityData.feels_like.toFixed(2)} °C</p>` +
+                  `<p>Humidity : ${cityData.humidity}%</p>` +
+                  `<p>Wind Speed : ${cityData.wind_speed} m/s</p>` +
+                  `<p>Pressure : ${cityData.pressure} hPa</p>` +
+                  `<p>Visibility : ${cityData.visibility.toFixed(2)} km</p>` +
+                  `<p>Last Updated : ${new Date(cityData.dt *1000).toLocaleString()}</p>`;
+                  
+              weatherSummaryDiv.appendChild(cityDiv);
+          }
+      }
+
+      // Fetch daily weather summary on button click
+      document.getElementById('daily-summary-button').addEventListener('click', fetchDailySummary);
+
+      // Function to fetch daily weather summary
+      async function fetchDailySummary() {
+          try {
+              const response = await fetch('/api/daily_summary');
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              const dailyData = await response.json();
+              console.log('Daily Summary Data:', dailyData); // Log the data received
+              
                 const dailySummaryBody = document.getElementById('daily-summary-body');
-                dailySummaryBody.innerHTML = ''; // Clear previous summary data
+                dailySummaryBody.innerHTML='';// Clear previous summary data
 
                 // Check if dailyData is an array and log its length
-                if (!Array.isArray(dailyData) || dailyData.length === 0) {
+                if (!Array.isArray(dailyData) || dailyData.length ===0 ) {
                     console.log('No data available or not an array');
-                    dailySummaryBody.innerHTML = '<tr><td colspan="5">No data available</td></tr>';
-                    return;
+                    dailySummaryBody.innerHTML='<tr><td colspan="5">No data available</td></tr>';
+                    return ;
                 }
-
+                
                 // Populate the table with the fetched data
                 dailyData.forEach(summary => {
                     const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${summary.date}</td>
-                        <td>${summary.avg_temp.toFixed(2)}</td>
-                        <td>${summary.max_temp.toFixed(2)}</td>
-                        <td>${summary.min_temp.toFixed(2)}</td>
-                        <td>${summary.dominant_condition}</td>
-                    `;
+                    row.innerHTML =
+                        `<td>${summary.date}</td>` +
+                        `<td>${summary.avg_temp.toFixed(2)}</td>` +
+                        `<td>${summary.max_temp.toFixed(2)}</td>` +
+                        `<td>${summary.min_temp.toFixed(2)}</td>` +
+                        `<td>${summary.dominant_condition}</td>`;
                     dailySummaryBody.appendChild(row);
                 });
 
                 // Now render the chart with the fetched data
                 renderChart(dailyData);
-            } catch (error) {
-                console.error('Error fetching daily summary:', error);
-                const dailySummaryBody = document.getElementById('daily-summary-body');
-                dailySummaryBody.innerHTML = '<tr><td colspan="5">Error fetching data</td></tr>';
-            }
-        }
+                
+           } catch (error) {
+               console.error('Error fetching daily summary:', error);
+               const dailySummaryBody = document.getElementById('daily-summary-body');
+               dailySummaryBody.innerHTML='<tr><td colspan="5">Error fetching data</td></tr>';
+           }
+       }
 
-        // Function to render the chart with daily summary data
-        function renderChart(dailyData) {
-            const ctx = document.getElementById('weatherChart').getContext('2d');
-            const labels = dailyData.map(summary => summary.date);
-            const avgTemps = dailyData.map(summary => summary.avg_temp);
-            const maxTemps = dailyData.map(summary => summary.max_temp);
-            const minTemps = dailyData.map(summary => summary.min_temp);
+       // Function to render the chart with daily summary data
+       function renderChart(dailyData) {
+           const ctx = document.getElementById('weatherChart').getContext('2d');
+           const labels = dailyData.map(summary => summary.date);
+           const avgTemps = dailyData.map(summary => summary.avg_temp);
+           const maxTemps = dailyData.map(summary => summary.max_temp);
+           const minTemps = dailyData.map(summary => summary.min_temp);
 
-            const weatherChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Average Temperature (°C)',
-                            data: avgTemps,
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            fill: false,
-                        },
-                        {
-                            label: 'Max Temperature (°C)',
-                            data: maxTemps,
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            fill: false,
-                        },
-                        {
-                            label: 'Min Temperature (°C)',
-                            data: minTemps,
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            fill: false,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                        },
-                    },
-                }
-            });
-        }
+           const weatherChart = new Chart(ctx,{
+               type:'line',
+               data:{
+                   labels : labels,
+                   datasets:[
+                       {label:'Average Temperature (°C)',
+                       data : avgTemps,
+                       borderColor :'rgba(75 ,192 ,192 ,1)',
+                       fill:false,},
+                       {label:'Max Temperature (°C)',
+                       data:maxTemps,
+                       borderColor:'rgba(255 ,99 ,132 ,1)',
+                       fill:false,},
+                       {label:'Min Temperature (°C)',
+                       data:minTemps,
+                       borderColor:'rgba(54 ,162 ,235 ,1)',
+                       fill:false,},
+                   ]
+               },
+               options:{
+                   responsive:true,
+                   scales:{
+                       y:{
+                           beginAtZero:true,
+                       },
+                   },
+               }
+           });
+       }
 
-        // Auto-fetch weather data when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchWeatherData();
-            startTimer(); // Start the timer
-        });
-    </script>
-</body>
-</html>
+       // Auto-fetch weather data when the page loads
+       document.addEventListener('DOMContentLoaded', () => {
+           fetchWeatherData();
+           startTimer(); // Start the timer
+       });
+   </script>
+   </body>
+   </html>

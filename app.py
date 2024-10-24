@@ -11,6 +11,15 @@ API_KEY = 'ee1d1fe79609640e074c7fb90fe20d72'  # Replace with your OpenWeatherMap
 CITIES = ["Delhi", "Mumbai", "Chennai", "Bangalore", "Kolkata", "Hyderabad"]
 weather_data = {}
 
+# User-configurable alert thresholds
+ALERT_THRESHOLDS = {
+    "temperature": 25,  # Celsius
+    "condition": "Rain"  # Example condition for alerts
+}
+
+# List to store alerts
+alerts = []
+
 # Mapping OpenWeatherMap weather conditions to FontAwesome icons
 WEATHER_ICONS = {
     'Clear': 'fa-sun',
@@ -42,7 +51,7 @@ def init_db():
         conn.commit()
 
 def fetch_weather_data():
-    global weather_data
+    global weather_data, alerts
     with app.app_context():  # Create application context for this thread
         today = datetime.now().date()
         daily_records = []
@@ -60,7 +69,10 @@ def fetch_weather_data():
                 pressure = data['main']['pressure']  # Get pressure
                 visibility = data['visibility'] / 1000  # Convert visibility from meters to kilometers
                 dt = data['dt']
-                
+
+                # Check for alerts based on thresholds
+                check_alerts(city, temp, main)
+
                 # Store today's weather data for aggregation
                 daily_records.append({
                     'temp': temp,
@@ -68,7 +80,7 @@ def fetch_weather_data():
                     'city': city,
                     'dt': dt
                 })
-                
+
                 weather_data[city] = {
                     'main': main,
                     'main_icon': icon_class,  # Use FontAwesome class for the icon
@@ -82,10 +94,20 @@ def fetch_weather_data():
                 }
             else:
                 print(f"Error fetching data for {city}: {data.get('message', 'Unknown error')}")
-        
+
         # Calculate daily aggregates and store in database
         if daily_records:
             calculate_daily_aggregates(today, daily_records)
+
+def check_alerts(city, temp, main_condition):
+    global alerts
+    # Check if temperature exceeds threshold
+    if temp > ALERT_THRESHOLDS["temperature"]:
+        alerts.append(f"Alert! Temperature in {city} exceeds {ALERT_THRESHOLDS['temperature']}°C: Current Temperature: {temp:.2f}°C.")
+    
+    # Check if the main weather condition matches the alert condition
+    if main_condition == ALERT_THRESHOLDS["condition"]:
+        alerts.append(f"Alert! Current weather in {city} is '{main_condition}'.")
 
 def calculate_daily_aggregates(today, records):
     temps = [record['temp'] for record in records]
@@ -114,7 +136,7 @@ def fetch_weather():
 
 @app.route('/')
 def index():
-    return render_template('index.html', weather_data=weather_data)
+    return render_template('index.html', weather_data=weather_data, alerts=alerts)
 
 @app.route('/api/weather_summary')
 def weather_summary():
@@ -126,7 +148,7 @@ def daily_summary():
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM daily_weather')
         summaries = cursor.fetchall()
-        
+
     # Format summaries for JSON response
     summary_list = []
     for date, avg_temp, max_temp, min_temp, dominant_condition in summaries:
@@ -137,7 +159,7 @@ def daily_summary():
             'min_temp': min_temp,
             'dominant_condition': dominant_condition
         })
-    
+
     return jsonify(summary_list)
 
 @app.template_filter('to_datetime')
@@ -147,7 +169,7 @@ def to_datetime(timestamp):
 if __name__ == '__main__':
     # Initialize database
     init_db()
-    
+
     # Start the background thread to fetch weather data every 5 minutes
     threading.Thread(target=fetch_weather_data, daemon=True).start()
     app.run(debug=False)
