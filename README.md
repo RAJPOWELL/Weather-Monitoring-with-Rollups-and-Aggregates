@@ -35,6 +35,28 @@ The Real-Time Weather Monitoring System is a web application that provides users
 
 5. Open your web browser and navigate to `http://127.0.0.1:5000`.
 
+
+## Using Docker
+
+1. Build the Docker image:
+
+   Make sure you are in the project directory where the Dockerfile is located, then run:
+
+   ```bash
+   docker build -t weather-monitoring-app .
+   ```
+2. Run the Docker container:
+
+   Run the following command to start the container:
+
+   ```bash
+   docker run -d -p 5000:5000 weather-monitoring-app
+   ```
+
+3. Access the application:
+
+   Open your web browser and go to http://localhost:5000 to view the app.
+
 ## Screenshots
 ### Dashboard
 ![Dashboard](Screenshots/Output_1.png)

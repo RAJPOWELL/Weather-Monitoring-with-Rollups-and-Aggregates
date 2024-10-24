@@ -172,4 +172,7 @@ if __name__ == '__main__':
 
     # Start the background thread to fetch weather data every 5 minutes
     threading.Thread(target=fetch_weather_data, daemon=True).start()
-    app.run(debug=False)
+    
+    # Change the host to '0.0.0.0' to allow external access
+    app.run(host='0.0.0.0', port=5000, debug=False)
+
