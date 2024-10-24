@@ -2,7 +2,7 @@ from flask import Flask, jsonify, render_template
 import requests
 import time
 import threading
-from datetime import datetime, timedelta
+from datetime import datetime
 import sqlite3
 
 app = Flask(__name__)
