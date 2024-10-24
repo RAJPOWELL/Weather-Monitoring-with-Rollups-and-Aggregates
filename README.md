@@ -1,6 +1,3 @@
-Certainly! Here’s the entire README content in a single cell for easy copy-pasting:
-
-```markdown
 # Real-Time Weather Monitoring System
 
 ## Overview
@@ -67,16 +64,8 @@ The application uses a SQLite database named `weather.db`. The database schema i
 - **Database**: SQLite
 - **API**: OpenWeatherMap API for fetching weather data
 
-## Contributing
-Contributions are welcome! Please open an issue or submit a pull request for any enhancements or bug fixes.
-
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
 ## Acknowledgments
 - [OpenWeatherMap](https://openweathermap.org/) for providing the weather data API.
 - [Flask](https://flask.palletsprojects.com/) for the web framework.
 - [Chart.js](https://www.chartjs.org/) for data visualization.
-```
 
-You can now easily copy and paste this entire block into your GitHub README.md file. Adjust any specific details or links as necessary!
