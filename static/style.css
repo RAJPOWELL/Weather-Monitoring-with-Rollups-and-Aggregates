@@ -1,23 +1,131 @@
 body {
-    background-color: #121212;
-    color: #e0e0e0;
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
+    background-color: #121212; /* Dark background */
+    color: #ffffff; /* White text */
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    min-height: 100vh; /* Full height for vertical centering */
+    transition: background-color 0.5s ease; /* Smooth background color transition */
+}
+
+.container {
+    max-width: 1200px; /* Maximum width for container */
+    width: 100%; /* Full width */
+    padding: 20px;
+    backdrop-filter: blur(10px); /* Blur effect */
+    border-radius: 15px; /* Rounded corners */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7); /* Deeper shadow for depth */
+    background-color: rgba(30, 30, 30, 0.85); /* Dark semi-transparent background */
 }
 
 h1 {
     text-align: center;
-    color: #ffffff;
+    margin-bottom: 20px;
+    animation: fadeIn 1s; /* Fade in animation for title */
+    font-size: 2.5em; /* Larger title */
+    color: #ffffff; /* White color for title */
 }
 
-.container {
-    width: 80%;
-    margin: auto;
-    padding: 20px;
+#timer {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+    animation: fadeIn 1s; /* Fade in animation for timer */
 }
 
-#weather-summary {
-    margin-top: 20px;
+#refresh-button, #daily-summary-button {
+    display: block;
+    margin: 0 auto 20px auto;
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #2196F3; /* Blue button color */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s; /* Smooth transitions */
+    animation: fadeIn 1s; /* Fade in animation for button */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Button shadow */
+    color: #ffffff; /* White text */
+}
+
+#refresh-button:hover, #daily-summary-button:hover {
+    background-color: #42a5f5; /* Lighter blue on hover */
+    transform: scale(1.05); /* Slight scale on hover */
+}
+
+.weather-summary {
+    display: flex; /* Use flexbox for alignment */
+    flex-wrap: wrap; /* Wrap tiles on smaller screens */
+    justify-content: space-between; /* Space out the weather tiles */
+}
+
+.city-summary {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
     padding: 20px;
-    background-color: #1f1f1f;
+    margin: 10px;
+    text-align: center;
+    flex: 1 1 calc(33.33% - 20px); /* Adjust tile size and spacing */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Shadow for tiles */
+    background-color: rgba(33, 150, 243, 0.1); /* Light blue semi-transparent tile */
+    transition: transform 0.3s, background-color 0.3s; /* Transition for hover effect */
+}
+
+.city-summary:hover {
+    transform: scale(1.05); /* Scale effect on hover */
+    background-color: rgba(33, 150, 243, 0.2); /* Change background color on hover */
+}
+
+.city-summary h3 {
+    color: #f09206; /* Light blue color for city names */
+}
+
+.city-summary i {
+    font-size: 50px; /* Icon size */
+    margin-bottom: 10px;
+    color: #ffffff; /* Icon color */
+}
+
+.daily-summary {
+    margin-top: 40px; /* Space between sections */
+    padding: 20px;
     border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.1); /* Light background for daily summary */
+}
+
+.daily-summary h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.daily-summary-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.daily-summary-table th, .daily-summary-table td {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 10px;
+    text-align: center;
+}
+
+/* Graph Style */
+#weatherChart {
+    margin-top: 40px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.1); /* Light background for the chart */
+    padding: 20px;
+}
+
+.alert {
+    background-color: #0b47b8; 
+    color: #f7f7f7; 
+    padding: 15px; 
+    margin: 10px 0;
+    border-radius: 10px; 
+    animation: fadeIn .5s; 
 }
