@@ -14,6 +14,7 @@ The Real-Time Weather Monitoring System is a web application that provides users
 | **User-Friendly Interface**           | ✅        |
 | **Manual Refresh**                    | ✅        |
 | **Responsive Design**                 | ✅        |
+| **Dockerized**                        | ✅        |
 
 
 ## Features
